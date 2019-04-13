@@ -2,6 +2,10 @@
 const fs = require(`fs`);
 const path = require(`path`);
 
+const transcriber = require('./transcript.js')
+const voice = require('./voiceResponse.js')
+const translate = require('./translate.js')
+
 const AudioRecorder = require(`node-audiorecorder`);
 
 // Constants.
@@ -45,43 +49,34 @@ audioRecorder.stream().on(`error`, function() {
 	console.warn(`Recording error.`);
 });
 
-// Keep process alive.
-process.stdin.resume();
+var sourceLang = 'ko';
+var destLang = 'en';
 
-// // Imports the Google Cloud client library
-// const speech = require('@google-cloud/speech');
-//
-// // Creates a client
-// const client = new speech.SpeechClient();
-//
-// // Reads a local audio file and converts it to base64
-// const file = fs.readFileSync(fileName);
-// const audioBytes = file.toString('base64');
-//
-// // The audio file's encoding, sample rate in hertz, and BCP-47 language code
-// const audio = {
-//   content: audioBytes,
-// };
-// const config = {
-//   encoding: 'LINEAR16',
-//   sampleRateHertz: 16000,
-//   languageCode: 'en-US',
-// };
-// const request = {
-//   audio: audio,
-//   config: config,
-// };
-//
-// // Detects speech in the audio file
-// client
-//   .recognize(request)
-//   .then(data => {
-//     const response = data[0];
-//     const transcription = response.results
-//       .map(result => result.alternatives[0].transcript)
-//       .join('\n');
-//     console.log(`Transcription: ${transcription}`);
-//   })
-//   .catch(err => {
-//     console.error('ERROR:', err);
-//   });
+setTimeout(() => {
+	audioRecorder.stop()
+	//make sure to set language accordingly
+	var prom = transcriber.syncRecognizeWords("examples-recordings/audio.wav", "LINEAR16", 16000, sourceLang);
+
+	//get transcribe, put through translateText(transcriber output, desired language to convert)
+
+	prom.then((arg) => {
+		console.log("Transcribed: " + arg);
+
+		var translatePromise = translate.translateText(arg, destLang)
+		translatePromise.then((translatedText) => {
+			console.log("Translated to: " + translatedText)
+
+			var chatbotResponse = translatedText
+
+			var responseLanguage = sourceLang;
+			var translateBackPromise = translate.translateText(chatbotResponse, responseLanguage)
+			translateBackPromise.then((text) => {
+				console.log("Translated back to: " + text)
+				var voiceProm = voice.voiceRespond(text, responseLanguage);
+				voiceProm.then((arg) => {
+					voice.speak(arg);
+				})
+			})
+		})
+	})
+}, 3000)
