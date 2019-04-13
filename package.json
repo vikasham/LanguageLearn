@@ -1,0 +1,24 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "dev" : "node ."
+  },
+  "keywords": [],
+  "contributors": [
+    {
+      "name": "Jonathan Holtmann",
+      "email": "holtmann@usc.edu",
+      "url": "https://holtmann.xyz"
+    }
+  ],
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@google-cloud/speech": "^2.3.1",
+    "fs": "^0.0.1-security",
+    "node-audiorecorder": "^1.4.1"
+  }
+}
