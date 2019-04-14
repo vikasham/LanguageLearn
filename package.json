@@ -20,6 +20,7 @@
     "@google-cloud/speech": "^2.3.1",
     "@google-cloud/text-to-speech": "^0.5.1",
     "@google-cloud/translate": "^3.0.1",
+    "axios": "^0.18.0",
     "fs": "^0.0.1-security",
     "node-audiorecorder": "^1.4.1",
     "play-sound": "^1.1.3",
