@@ -24,20 +24,20 @@ if (!fs.existsSync(DIRECTORY)){
 
 // Create file path with random name.
 const fileName = path.join(DIRECTORY, "audio.wav");
-
-console.log(`Writing new recording file at: `, fileName);
+var conversation = new Array()
 
 var sourceLang = 'de';
 var destLang = 'en';
 var responseLang = 'en';
 
-process.on('message', (m, jsonData) => {
-	data = JSON.parse(jsonData)
-  if (m === 'run') {
+process.on('message', data => {
+  if (data.message === 'run') {
 		sourceLang = data.sourceLang
 		responseLand = data.responseLang
     askRespond()
-  }
+  } else if (data.message == 'get-transcript') {
+		process.send({message : 'done', transcript : conversation})
+	}
 });
 
 function getResponse(context) {
@@ -65,8 +65,6 @@ function getResponse(context) {
 		})
 	})
 }
-
-var conversation = new Array()
 
 function askRespond () {
 	console.log("Begin askRespond")
