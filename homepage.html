@@ -22,6 +22,7 @@
       document.getElementById("second").style.visibility = "hidden";
       document.getElementById("first").style.visibility = "hidden";
       document.getElementById("third").style.visibility = "visible";
+
     }
 
     function myFunction3() {
@@ -47,17 +48,12 @@
     }
 
     $(document).ready(() => {
-
       ipcRenderer.on('transcript', (event, val) => {
         console.log(val)
-        
-
-      })
-
-      ipcRenderer.on('message', (event, arg) => {
-        console.log(arg)
-        if (arg == 'done')
-          console.log("Domne recording")
+        $("#responsep").empty()
+        $("#responsep1").empty()
+        $("#responsep").html(val[0])
+        $("#responsep1").html(val[2])
       })
 
     })
@@ -262,6 +258,29 @@
       margin-left: calc(50vw - 110px);
     }
 
+    #responsep
+    {
+      font-family: "Avenir-Light";
+      font-size: 20px;
+      position:fixed;
+      margin-top:-30vh;
+      margin-left:15vw;
+      margin-right:15vw;
+      width: 70vw;
+    }
+
+    #responsep1
+    {
+      font-family: "Avenir-Light";
+      font-size: 20px;
+      position:fixed;
+      margin-top:-40vh;
+      margin-left:15vw;
+      margin-right:15vw;
+      width: 70vw;
+      color:white;
+    }
+
   </style>
 
 </head>
@@ -274,10 +293,8 @@
     <select name="select-yourlanguage" id="select-yourlanguage">
       <option value="" disabled>Your Language</option>
       <option value="ar">Arabic</option>
-      <option value="zh-CN">Chinese</option>
       <option value="en" selected="selected">English</option>
       <option value="de">German</option>
-      <option value="hi">Hindi</option>
       <option value="it">Italian</option>
       <option value="ja">Japanese</option>
       <option value="ko">Korean</option>
@@ -291,10 +308,8 @@
     <select name="select-responseLanguage" id="select-responseLanguage">
       <option value="" disabled>Response Language</option>
       <option value="ar">Arabic</option>
-      <option value="zh-CN">Chinese</option>
       <option value="en" selected="selected">English</option>
       <option value="de">German</option>
-      <option value="hi">Hindi</option>
       <option value="it">Italian</option>
       <option value="ja">Japanese</option>
       <option value="ko">Korean</option>
@@ -314,7 +329,9 @@
   <button id="startbutton" onclick="myFunction1()">get started!</button>
 <div>
 
-<div id = "third" style = "visibility: hidden;">
+<div id = "third" style = "visibility: hidden; width:100%;">
+    <p id="responsep1" style="position:fixed;"></p>
+    <p id="responsep" style="position:fixed;"></p>
   <button id="stopTalking" onclick="stopAskRead()">stop</button>
 </div>
 

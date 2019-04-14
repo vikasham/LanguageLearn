@@ -83,6 +83,7 @@ app.on('ready', function () {
   console.log('Electron ready')
 
 	ipcMain.on('start', (event, arg) => {
+    going = true
     loop(arg, event)
   })
 

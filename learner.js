@@ -90,6 +90,8 @@ function askRespond (sourceLang, responseLang) {
 	return new Promise((resolve, reject) => {
 		setTimeout(() => {
 			audioRecorder.stop()
+			nativeConversation = []
+			foreignConversation = []
 			//make sure to set language accordingly
 			var prom = transcriber.syncRecognizeWords("examples-recordings/audio.wav", "LINEAR16", 16000, sourceLang);
 
@@ -109,10 +111,49 @@ function askRespond (sourceLang, responseLang) {
 				translatePromise.then((translatedText) => {
 					console.log("Translated to: " + translatedText);
 
-					conversation.push(translatedText)
+
+
+
+
+
+
+
+
+
+					//MY CHANGES - UNCOMMENT
+				conversation = []
+				conversation.push(translatedText)
 
 					var chatbotResponsePromise = getResponse(conversation);
 					chatbotResponsePromise.then((chatbotResponse) => {
+
+
+
+
+
+
+						console.log("The translate is san: " + chatbotResponse)
+						var transPromise = translate.translateText(chatbotResponse, sourceLang)
+						transPromise.then((trans) => {
+							console.log("The translated output is: " + conversation)
+							conversation.pop()
+							conversation.push(trans)
+							console.log("The translated output after is: " + conversation)
+							console.log("Her fine")
+						})
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 						var translateBackPromise = translate.translateText(chatbotResponse, responseLang)
 						translateBackPromise.then((text) => {
