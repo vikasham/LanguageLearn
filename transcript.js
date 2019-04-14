@@ -63,6 +63,7 @@ async function syncRecognizeWords(
 
       resolve(resultString);
     });
+    resolve("")
   });
 
 

@@ -55,9 +55,12 @@ function voiceRespond(text, languageCode)
 const player = require('play-sound')(opts = {})
 
 function speak(file) {
-  player.play(file, (err) => {
-    if (err)
-      throw err
+  return new Promise((resolve, reject) => {
+    player.play(file, (err) => {
+      if (err)
+        reject(err)
+      resolve("")
+    })
   })
 }
 
