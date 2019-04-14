@@ -1,17 +1,14 @@
 // Imports modules.
 const fs = require(`fs`);
 const path = require(`path`);
-
+const axios = require('axios')
 const transcriber = require('./transcript.js')
 const voice = require('./voiceResponse.js')
 const translate = require('./translate.js')
 
 const AudioRecorder = require(`node-audiorecorder`);
 
-// Constants.
 const DIRECTORY = `examples-recordings`;
-
-// Initialize recorder and file stream.
 const audioRecorder = new AudioRecorder({
 	program: process.platform === `win32` ? `sox` : `rec`,
   // Following options only available when using `rec` or `sox`.
@@ -30,7 +27,18 @@ const fileName = path.join(DIRECTORY, "audio.wav");
 
 console.log(`Writing new recording file at: `, fileName);
 
-const axios = require('axios')
+var sourceLang = 'de';
+var destLang = 'en';
+var responseLang = 'en';
+
+process.on('message', (m, jsonData) => {
+	data = JSON.parse(jsonData)
+  if (m === 'run') {
+		sourceLang = data.sourceLang
+		responseLand = data.responseLang
+    askRespond()
+  }
+});
 
 function getResponse(context) {
 	var cont
@@ -58,13 +66,10 @@ function getResponse(context) {
 	})
 }
 
-var sourceLang = 'de';
-var destLang = 'en';
-var responseLanguage = 'en';
-
 var conversation = new Array()
 
 function askRespond () {
+	console.log("Begin askRespond")
 	// Create write stream.
 	const fileStream = fs.createWriteStream(fileName, { encoding: `binary` });
 
@@ -108,14 +113,14 @@ function askRespond () {
 				var chatbotResponsePromise = getResponse(conversation);
 				chatbotResponsePromise.then((chatbotResponse) => {
 
-					var translateBackPromise = translate.translateText(chatbotResponse, responseLanguage)
+					var translateBackPromise = translate.translateText(chatbotResponse, responseLang)
 					translateBackPromise.then((text) => {
 						console.log("Translated back to: " + text)
-						var voiceProm = voice.voiceRespond(text, responseLanguage);
+						var voiceProm = voice.voiceRespond(text, responseLang);
 						voiceProm.then((arg) => {
 							var doneSpeakingPromise = voice.speak(arg);
 							doneSpeakingPromise.then(() => {
-								askRespond()
+                process.send("done");
 							})
 						})
 					})
