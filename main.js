@@ -19,7 +19,7 @@ function createWindow () {
   mainWindow = new BrowserWindow({width: 600, height: 800, webPreferences: {nodeIntegration: true}, show: false})
 
   // and load the index.html of the app.
-  mainWindow.loadURL(`file://${__dirname}/main.html`)
+  mainWindow.loadURL(`file://${__dirname}/homepage.html`)
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show()
@@ -68,14 +68,22 @@ app.on('ready', function () {
 
 	const learner = fork('./learner.js')
 	ipcMain.on('start', (event, arg) => {
-		learner.send('run', JSON.stringify({sourceLang : 'de', responseLanguage : 'en'}))
+		learner.send({message: 'run', sourceLang : arg.sourceLang, responseLanguage : arg.responseLang})
   })
 
-	learner.on('message', message => {
-	  if (message == 'done') {
+  var storedEvent
+  ipcMain.on('get-transcript', (event, arg) => {
+    learner.send({message: 'get-transcript'})
+    storedEvent = event
+  })
+
+	learner.on('message', data => {
+	  if (data.message == 'done') {
 			console.log("Child process finished askRead() execution")
 			child.send("run")
-		}
+		} else if (data.message == 'transcript') {
+      storedEvent.sender.send('transcript', data.transcript)
+    }
 	});
 
 })
