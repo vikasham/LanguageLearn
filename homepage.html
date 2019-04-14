@@ -24,7 +24,14 @@
       document.getElementById("third").style.visibility = "visible";
     }
 
+    function myFunction3() {
+      document.getElementById("second").style.visibility = "hidden";
+      document.getElementById("first").style.visibility = "visible";
+      document.getElementById("third").style.visibility = "hidden";
+    }
+
     function runAskRead() {
+      myFunction2();
       var data = {
         'sourceLang' : $("#select-yourlanguage").val(),
         'responseLang' : $("#select-responseLanguage").val()
@@ -32,7 +39,26 @@
       ipcRenderer.send('start', data)
     }
 
+    function stopAskRead() {
+      myFunction3();
+      ipcRenderer.send('stop', '')
+      //array of three arrays,
+
+    }
+
     $(document).ready(() => {
+
+      ipcRenderer.on('transcript', (event, val) => {
+        console.log(val)
+        
+
+      })
+
+      ipcRenderer.on('message', (event, arg) => {
+        console.log(arg)
+        if (arg == 'done')
+          console.log("Domne recording")
+      })
 
     })
   </script>
@@ -46,13 +72,13 @@
     	height: 45px;
     	border-radius:22px;
     	background-color:rgb(0,230,134);
-    	border: 1px solid grey;
     	outline:none;
     	font-family: "Avenir Next";
     	font-weight:200;
     	font-size:30px;
     	color: white;
     	text-decoration:none;
+      border: 0px;
     }
 
     button:hover
@@ -63,11 +89,11 @@
     	height: 45px;
     	border-radius:22px;
     	background-color:rgb(0,250,154);
-    	border: 1px solid grey;
     	font-family: "Avenir Next";
     	font-weight:200;
     	font-size:30px;
     	color:white;
+      border: 0px;
     }
 
     button:active
@@ -78,36 +104,84 @@
     	height: 45px;
     	border-radius:22px;
     	background-color: rgb(0,210,114);
-    	border: 1px solid grey;
     	font-family: "Avenir Next";
     	font-weight:200;
     	font-size:30px;
     	color:white;
+      border: 0px;
     }
 
     #startbutton
     {
       width:220px;
+      margin-top: 55.2vh;
+      margin-left: calc(50vw - 110px);
     }
     #startbutton:hover
     {
       width:220px;
+      margin-top: 55.2vh;
+      margin-left: calc(50vw - 110px);
     }
     #startbutton:active
     {
       width:220px;
+      margin-top: 55.2vh;
+      margin-left: calc(50vw - 110px);
+    }
+
+    #startTalking
+    {
+      position: fixed;
+      margin-top: 4vh;
+      margin-left: calc(50vw - 80px);
+    }
+    #startTalking:hover
+    {
+      margin-left: calc(50vw - 80px);
+    }
+    #startTalking:active
+    {
+      margin-left: calc(50vw - 80px);
+    }
+
+    #stopTalking
+    {
+      position: fixed;
+      margin-top: -5vh;
+      margin-left: calc(50vw - 80px);
+      background-color: #DC143C;
+    }
+    #stopTalking:hover
+    {
+      margin-top: -5vh;
+      margin-left: calc(50vw - 80px);
+      background-color: #CD5C5C;
+    }
+    #stopTalking:active
+    {
+      margin-top: -5vh;
+      margin-left: calc(50vw - 80px);
+      background-color: #B22222;
     }
 
     #title {
-      margin-left: 40vw;
+      position:fixed;
+      width:16vw;
+      margin-top: 27vh;
+      margin-left: calc(50vw - 110px);
       color: white;
       font-family: Avenir-Light;
     }
 
     #intro {
+      position:fixed;
+      margin-top:35vh;
+      width: 350px;
       color: gray;
       font-family: Avenir-Light;
-      margin-left: 24vw;
+      text-align: justify;
+      margin-left: calc(50vw - 175px);
     }
 
     #second {
@@ -123,13 +197,69 @@
     #firstbutton {
       position: fixed;
       margin-left: calc(50vw - 110px);
-      margin-top: 40vh;
+      margin-top: 30vh;
+      width:10vw;
     }
     #firstHead {
       margin-bottom: 2vh;
+      margin-top: -4vh;
+      position: fixed;
       color: white;
       font-size: 110%;
       font-family: "Avenir-Light";
+    }
+
+    #secondButton {
+      position: fixed;
+      margin-left: calc(50vw - 110px);
+      margin-top: 44vh;
+      width:10vw;
+    }
+    #secondHead {
+      position: fixed;
+      margin-bottom: 2vh;
+      margin-top: -4vh;
+      color: white;
+      font-size: 110%;
+      font-family: "Avenir-Light";
+    }
+
+    #select-yourlanguage
+    {
+      width:220px;
+      font-family:"Avenir-Light";
+      font-size:20px;
+    }
+    #select-responseLanguage
+    {
+      width:220px;
+      font-family:"Avenir-Light";
+      font-size:20px;
+    }
+
+    #startTalking {
+      position: fixed;
+      margin-top: 55.2vh;
+    }
+
+    #stopbutton
+    {
+      width:220px;
+      position: fixed;
+      margin-top: -43.3px;
+      margin-left: calc(50vw - 110px);
+    }
+    #stopbutton:hover
+    {
+      width:220px;
+      margin-top: -43.3px;
+      margin-left: calc(50vw - 110px);
+    }
+    #stopbutton:active
+    {
+      width:220px;
+      margin-top: -43.3px;
+      margin-left: calc(50vw - 110px);
     }
 
   </style>
@@ -143,18 +273,35 @@
     <h6 id = "firstHead"> Select your language! </h6>
     <select name="select-yourlanguage" id="select-yourlanguage">
       <option value="" disabled>Your Language</option>
-      <option value="en">English</option>
+      <option value="ar">Arabic</option>
+      <option value="zh-CN">Chinese</option>
+      <option value="en" selected="selected">English</option>
       <option value="de">German</option>
+      <option value="hi">Hindi</option>
+      <option value="it">Italian</option>
+      <option value="ja">Japanese</option>
       <option value="ko">Korean</option>
+      <option value="pt">Portuguese</option>
+      <option value="ru">Russian</option>
+      <option value="es">Spanish</option>
     </select>
   </div>
-  <div class="sel sel--responseLanguage">
-  <select name="select-responseLanguage" id="select-responseLanguage">
-    <option value="" disabled>Response Language</option>
-    <option value="en">English</option>
-    <option value="de">German</option>
-    <option value="ko">Korean</option>
-  </select>
+  <div id="secondButton">
+    <h6 id = "secondHead"> Select your desired output language! </h6>
+    <select name="select-responseLanguage" id="select-responseLanguage">
+      <option value="" disabled>Response Language</option>
+      <option value="ar">Arabic</option>
+      <option value="zh-CN">Chinese</option>
+      <option value="en" selected="selected">English</option>
+      <option value="de">German</option>
+      <option value="hi">Hindi</option>
+      <option value="it">Italian</option>
+      <option value="ja">Japanese</option>
+      <option value="ko">Korean</option>
+      <option value="pt">Portuguese</option>
+      <option value="ru">Russian</option>
+      <option value="es">Spanish</option>
+    </select>
   </div>
   <button id="startTalking" onclick="runAskRead()">start</button>
 </div>
@@ -167,7 +314,8 @@
   <button id="startbutton" onclick="myFunction1()">get started!</button>
 <div>
 
-<div id = "third">
+<div id = "third" style = "visibility: hidden;">
+  <button id="stopTalking" onclick="stopAskRead()">stop</button>
 </div>
 
 </body>

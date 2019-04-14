@@ -26,6 +26,7 @@ async function syncRecognizeWords(
     sampleRateHertz: sampleRateHertz,
     languageCode: languageCode,
   };
+  
   const audio = {
     content: fs.readFileSync(filename).toString('base64'),
   };
@@ -63,7 +64,6 @@ async function syncRecognizeWords(
 
       resolve(resultString);
     });
-    resolve("")
   });
 
 

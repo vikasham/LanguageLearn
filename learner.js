@@ -12,7 +12,7 @@ const DIRECTORY = `examples-recordings`;
 const audioRecorder = new AudioRecorder({
 	program: process.platform === `win32` ? `sox` : `rec`,
   // Following options only available when using `rec` or `sox`.
-  silence: 3,         // Duration of silence in seconds before it stops recording.
+  silence: 1,         // Duration of silence in seconds before it stops recording.
   thresholdStart: 0.5,  // Silence threshold to start recording.
   thresholdStop: 0.5,   // Silence threshold to stop recording.
 }, console);
@@ -25,10 +25,10 @@ if (!fs.existsSync(DIRECTORY)){
 // Create file path with random name.
 const fileName = path.join(DIRECTORY, "audio.wav");
 var conversation = new Array()
+var nativeConversation = new Array()
+var foreignConversation = new Array()
 
-var sourceLang = 'de';
 var destLang = 'en';
-var responseLang = 'en';
 
 process.on('message', data => {
   if (data.message === 'run') {
@@ -66,8 +66,8 @@ function getResponse(context) {
 	})
 }
 
-function askRespond () {
-	console.log("Begin askRespond")
+function askRespond (sourceLang, responseLang) {
+	console.log("Begin askRespond " + sourceLang + " " + responseLang)
 	// Create write stream.
 	const fileStream = fs.createWriteStream(fileName, { encoding: `binary` });
 
@@ -87,45 +87,57 @@ function askRespond () {
 		console.warn(`Recording error.`);
 	});
 
-	setTimeout(() => {
-		audioRecorder.stop()
-		//make sure to set language accordingly
-		var prom = transcriber.syncRecognizeWords("examples-recordings/audio.wav", "LINEAR16", 16000, sourceLang);
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {
+			audioRecorder.stop()
+			//make sure to set language accordingly
+			var prom = transcriber.syncRecognizeWords("examples-recordings/audio.wav", "LINEAR16", 16000, sourceLang);
 
-		//get transcribe, put through translateText(transcriber output, desired language to convert)
+			//get transcribe, put through translateText(transcriber output, desired language to convert)
 
-		prom.then((arg) => {
-			console.log("Transcribed: " + arg);
+			prom.then((arg) => {
+				console.log("Transcribed: " + arg);
 
-			if (!arg) {
-				askRespond()
-				return;
-			}
+				nativeConversation.push(arg)
 
-			var translatePromise = translate.translateText(arg, destLang)
-			translatePromise.then((translatedText) => {
-				console.log("Translated to: " + translatedText);
+				if (!arg) {
+					askRespond()
+					return;
+				}
 
-				conversation.push(translatedText)
+				var translatePromise = translate.translateText(arg, destLang)
+				translatePromise.then((translatedText) => {
+					console.log("Translated to: " + translatedText);
 
-				var chatbotResponsePromise = getResponse(conversation);
-				chatbotResponsePromise.then((chatbotResponse) => {
+					conversation.push(translatedText)
 
-					var translateBackPromise = translate.translateText(chatbotResponse, responseLang)
-					translateBackPromise.then((text) => {
-						console.log("Translated back to: " + text)
-						var voiceProm = voice.voiceRespond(text, responseLang);
-						voiceProm.then((arg) => {
-							var doneSpeakingPromise = voice.speak(arg);
-							doneSpeakingPromise.then(() => {
-                process.send("done");
+					var chatbotResponsePromise = getResponse(conversation);
+					chatbotResponsePromise.then((chatbotResponse) => {
+
+						var translateBackPromise = translate.translateText(chatbotResponse, responseLang)
+						translateBackPromise.then((text) => {
+							foreignConversation.push(text)
+							console.log("Translated back to: " + text)
+							var voiceProm = voice.voiceRespond(text, responseLang);
+							voiceProm.then((arg) => {
+								var doneSpeakingPromise = voice.speak(arg);
+								doneSpeakingPromise.then(() => {
+									console.log("Done speaking")
+	                resolve("done")
+								})
 							})
 						})
 					})
 				})
 			})
-		})
-	}, 3000)
+		}, 5000)
+	})
+
+
 }
 
-module.exports = Object.assign({askRespond})
+function getTranscript() {
+	return [conversation, nativeConversation, foreignConversation];
+}
+
+module.exports = Object.assign({askRespond, getTranscript})

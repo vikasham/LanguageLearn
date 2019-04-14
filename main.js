@@ -2,7 +2,6 @@ const electron = require('electron')
 
 
 const { ipcMain } = require('electron')
-const { fork } = require('child_process');
 
 // Module to control application life.
 const app = electron.app
@@ -62,28 +61,37 @@ app.on('activate', function () {
   }
 })
 
+const learner = require('./learner.js')
+
+var going = true
+
+function loop(arg, event) {
+  event.sender.send('transcript', learner.getTranscript())
+  console.log("Loop " + going)
+  if (!going)
+    return
+
+  var promise = learner.askRespond(arg.sourceLang, arg.responseLang)
+  promise.then(() => {
+    console.log("Here")
+    loop(arg, event)
+  })
+}
+
 // In main process.
 app.on('ready', function () {
   console.log('Electron ready')
 
-	const learner = fork('./learner.js')
 	ipcMain.on('start', (event, arg) => {
-		learner.send({message: 'run', sourceLang : arg.sourceLang, responseLanguage : arg.responseLang})
+    loop(arg, event)
+  })
+
+  ipcMain.on('stop', (event, arg) => {
+    going = false
   })
 
   var storedEvent
   ipcMain.on('get-transcript', (event, arg) => {
-    learner.send({message: 'get-transcript'})
-    storedEvent = event
+    event.returnValue = learner.getTranscript()
   })
-
-	learner.on('message', data => {
-	  if (data.message == 'done') {
-			console.log("Child process finished askRead() execution")
-			child.send("run")
-		} else if (data.message == 'transcript') {
-      storedEvent.sender.send('transcript', data.transcript)
-    }
-	});
-
 })
