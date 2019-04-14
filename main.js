@@ -49,8 +49,36 @@ audioRecorder.stream().on(`error`, function() {
 	console.warn(`Recording error.`);
 });
 
+const request = require('request')
+
+function getResponse(context) {
+	var cont
+	for (var i = context.size() - 4; i < context.size(); i++) {
+		cont.push(context[i])
+	}
+
+	return new Promise((resolve, reject) => {
+		request.post({
+			url : 'http://localhost:8080/cakechat_api/v1/actions/get_response',
+			form : {
+				context : cont,
+				emotion : 'neutral'
+			},
+			json : true
+		}, (err, httpResponse, body) => {
+			if (err) reject(err)
+			
+			console.log("Received: " + httpResponse.response)
+			resolve(httpResponse.response)
+		}
+	})
+}
+
+
 var sourceLang = 'ko';
 var destLang = 'en';
+
+var conversation = new Array()
 
 setTimeout(() => {
 	audioRecorder.stop()
@@ -64,17 +92,20 @@ setTimeout(() => {
 
 		var translatePromise = translate.translateText(arg, destLang)
 		translatePromise.then((translatedText) => {
-			console.log("Translated to: " + translatedText)
+			console.log("Translated to: " + translatedText);
 
-			var chatbotResponse = translatedText
+			conversation.push(translatedText)
 
-			var responseLanguage = sourceLang;
-			var translateBackPromise = translate.translateText(chatbotResponse, responseLanguage)
-			translateBackPromise.then((text) => {
-				console.log("Translated back to: " + text)
-				var voiceProm = voice.voiceRespond(text, responseLanguage);
-				voiceProm.then((arg) => {
-					voice.speak(arg);
+			var chatbotResponsePromise = getResponse(conversation);
+			chatbotResponsePromise.then((response) => {
+				var responseLanguage = sourceLang;
+				var translateBackPromise = translate.translateText(chatbotResponse, responseLanguage)
+				translateBackPromise.then((text) => {
+					console.log("Translated back to: " + text)
+					var voiceProm = voice.voiceRespond(text, responseLanguage);
+					voiceProm.then((arg) => {
+						voice.speak(arg);
+					})
 				})
 			})
 		})
