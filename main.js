@@ -2,6 +2,7 @@ const electron = require('electron')
 
 
 const { ipcMain } = require('electron')
+const { fork } = require('child_process');
 
 // Module to control application life.
 const app = electron.app
@@ -63,9 +64,18 @@ app.on('activate', function () {
 
 // In main process.
 app.on('ready', function () {
+  console.log('Electron ready')
 
+	const learner = fork('./learner.js')
 	ipcMain.on('start', (event, arg) => {
-
+		learner.send('run', JSON.stringify({sourceLang : 'de', responseLanguage : 'en'}))
   })
+
+	learner.on('message', message => {
+	  if (message == 'done') {
+			console.log("Child process finished askRead() execution")
+			child.send("run")
+		}
+	});
 
 })
